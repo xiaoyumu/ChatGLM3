@@ -5,6 +5,7 @@
 
 
 import json
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import List, Literal, Optional, Union
@@ -15,6 +16,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
+from torch import hub
 from transformers import AutoTokenizer, AutoModel
 
 from utils import process_response, generate_chatglm3, generate_stream_chatglm3
@@ -219,8 +221,21 @@ async def predict(model_id: str, params: dict):
 
 
 if __name__ == "__main__":
-    tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm3-6b", trust_remote_code=True)
-    model = AutoModel.from_pretrained("THUDM/chatglm3-6b", trust_remote_code=True).cuda()
+
+    torch_hub_dir: str = "D:/ai/cache/torch"
+    sentence_transformers_dir: str = "D:/ai/cache/torch/sentence_transformers"
+    huggingface_home_dir: str = "D:/ai/cache/huggingface"
+
+    os.environ['HUGGINGFACE_HUB_CACHE'] = huggingface_home_dir
+    hub.set_dir(torch_hub_dir)
+
+    # Load torch hub model from ./torch
+    # For embeddings
+    os.environ['SENTENCE_TRANSFORMERS_HOME'] = sentence_transformers_dir
+
+    MODEL_PATH = "D:\\ai\\nlp\\llm\\THUDM\\chatglm3-6b-32k"
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True, revision="v1.0")
+    model = AutoModel.from_pretrained(MODEL_PATH, trust_remote_code=True, revision="v1.0").cuda()
     # 多显卡支持，使用下面两行代替上面一行，将num_gpus改为你实际的显卡数量
     # from utils import load_model_on_gpus
     # model = load_model_on_gpus("THUDM/chatglm3-6b", num_gpus=2)

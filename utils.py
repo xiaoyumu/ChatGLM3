@@ -196,3 +196,4 @@ def generate_chatglm3(model: PreTrainedModel, tokenizer: PreTrainedTokenizer, pa
     for response in generate_stream_chatglm3(model, tokenizer, params):
         pass
     return response
+
